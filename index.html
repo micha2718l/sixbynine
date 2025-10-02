@@ -3,101 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Poetry Visualizer</title>
+    <title>SIXBYNINE - Interactive Art Gallery</title>
+    <meta http-equiv="refresh" content="0; url=gallery.html">
     <style>
-        * {
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Georgia', serif;
-            overflow: hidden;
-            background: #000;
-            cursor: crosshair;
-        }
-
-        #canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        #poem-container {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 24px;
-            line-height: 1.8;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5),
-                         0 0 40px rgba(100, 200, 255, 0.3);
-            max-width: 80%;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .poem-line {
-            opacity: 0;
-            animation: fadeIn 2s forwards;
-            margin: 10px 0;
-        }
-
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-            }
-        }
-
-        #info {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 14px;
-            text-align: center;
             font-family: 'Courier New', monospace;
-            z-index: 10;
-            pointer-events: none;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0f051a 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
         }
-
-        #quantum-state {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            color: rgba(255, 255, 255, 0.7);
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            z-index: 10;
-            text-align: right;
-            pointer-events: none;
-        }
-
         .loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 18px;
-            z-index: 100;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <canvas id="canvas"></canvas>
-    <div id="poem-container"></div>
-    <div id="quantum-state"></div>
-    <div id="info">
-        Move mouse • Click • Double-click vortex • Space regenerate • C explosion • T trails • H hue • R reverse
+    <div class="loading">
+        <h1>🎭 SIXBYNINE Gallery</h1>
+        <p>Redirecting to gallery...</p>
     </div>
-
-    <script src="quantum-poetry.js"></script>
+    <script>
+        // Fallback redirect if meta refresh doesn't work
+        window.location.href = 'gallery.html';
+    </script>
 </body>
 </html>

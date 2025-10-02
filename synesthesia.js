@@ -26,6 +26,14 @@ class SynesthesiaEngine {
         this.dimensionalLayers = [[], [], [], [], []];
         this.currentDimension = 0;
         
+        // Performance limits
+        this.maxParticles = 800; // Reduced from unlimited
+        this.maxGravityWells = 10;
+        this.maxTimeDistortions = 5;
+        
+        // Gradient cache for performance
+        this.gradientCache = new Map();
+        
         // User state
         this.mouseX = 0;
         this.mouseY = 0;
@@ -224,11 +232,20 @@ class SynesthesiaEngine {
     }
 
     paintReality(x, y) {
+        // Enforce particle limit
+        if (this.particles.length >= this.maxParticles) {
+            // Remove oldest particles
+            this.particles.splice(0, 50);
+        }
+        
         // Create particles along the drawing path
         const hue = (this.time * 2 + x * 0.5) % 360;
         const frequency = this.colorToFreq.get(Math.floor(hue));
         
-        for (let i = 0; i < 3; i++) {
+        // Reduce particle creation rate if getting close to limit
+        const creationRate = this.particles.length > this.maxParticles * 0.8 ? 1 : 3;
+        
+        for (let i = 0; i < creationRate; i++) {
             const particle = {
                 x: x + (Math.random() - 0.5) * 10,
                 y: y + (Math.random() - 0.5) * 10,
@@ -258,6 +275,11 @@ class SynesthesiaEngine {
     }
 
     createGravityWell(x, y) {
+        // Enforce gravity well limit
+        if (this.gravityWells.length >= this.maxGravityWells) {
+            this.gravityWells.shift(); // Remove oldest
+        }
+        
         const well = {
             x, y,
             strength: 5 + Math.random() * 10,
@@ -278,6 +300,11 @@ class SynesthesiaEngine {
     }
 
     createTimeDistortion(x, y) {
+        // Enforce time distortion limit
+        if (this.timeDistortions.length >= this.maxTimeDistortions) {
+            this.timeDistortions.shift(); // Remove oldest
+        }
+        
         const distortion = {
             x, y,
             strength: 0.5 + Math.random() * 1.5,
@@ -486,10 +513,14 @@ class SynesthesiaEngine {
     }
 
     updateParticles() {
+        // Skip expensive operations if too many particles
+        const skipConsciousness = this.particles.length > 600;
+        const skipTimeDistortions = this.particles.length > 800;
+        
         this.particles = this.particles.filter(p => {
             p.age++;
             
-            // Apply gravity wells
+            // Apply gravity wells (always important)
             this.gravityWells.forEach(well => {
                 const dx = well.x - p.x;
                 const dy = well.y - p.y;
@@ -502,22 +533,24 @@ class SynesthesiaEngine {
                 }
             });
             
-            // Apply time distortions
-            this.timeDistortions.forEach(distortion => {
-                const dx = distortion.x - p.x;
-                const dy = distortion.y - p.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                
-                if (dist < distortion.radius) {
-                    const timeEffect = distortion.strength * distortion.direction * (1 - dist / distortion.radius);
-                    p.vx *= (1 + timeEffect * 0.1);
-                    p.vy *= (1 + timeEffect * 0.1);
-                    p.decay *= (1 + timeEffect * 0.05);
-                }
-            });
+            // Apply time distortions (skip if too many particles)
+            if (!skipTimeDistortions) {
+                this.timeDistortions.forEach(distortion => {
+                    const dx = distortion.x - p.x;
+                    const dy = distortion.y - p.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < distortion.radius) {
+                        const timeEffect = distortion.strength * distortion.direction * (1 - dist / distortion.radius);
+                        p.vx *= (1 + timeEffect * 0.1);
+                        p.vy *= (1 + timeEffect * 0.1);
+                        p.decay *= (1 + timeEffect * 0.05);
+                    }
+                });
+            }
             
-            // Conscious particles make decisions
-            if (p.conscious && this.consciousnessEnabled) {
+            // Conscious particles make decisions (skip if too many particles)
+            if (!skipConsciousness && p.conscious && this.consciousnessEnabled) {
                 if (Math.random() < 0.01) {
                     // Choose a target
                     const others = this.particles.filter(other => other !== p);
@@ -680,31 +713,38 @@ class SynesthesiaEngine {
     }
 
     drawParticles() {
-        this.particles.forEach(p => {
+        // Batch particles by hue for better performance
+        const batchSize = 5;
+        
+        this.particles.forEach((p, index) => {
             const alpha = p.life * 0.8;
             
-            // Main glow
-            const gradient = this.ctx.createRadialGradient(
-                p.x, p.y, 0,
-                p.x, p.y, p.size * 3
-            );
-            gradient.addColorStop(0, `hsla(${p.hue}, 100%, 70%, ${alpha})`);
-            gradient.addColorStop(0.5, `hsla(${p.hue}, 100%, 50%, ${alpha * 0.5})`);
-            gradient.addColorStop(1, `hsla(${p.hue}, 100%, 30%, 0)`);
+            // Only draw full glow for every Nth particle when count is high
+            const drawFullGlow = this.particles.length < 500 || index % 2 === 0;
             
-            this.ctx.fillStyle = gradient;
-            this.ctx.beginPath();
-            this.ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
-            this.ctx.fill();
+            if (drawFullGlow) {
+                // Main glow - use simpler gradient
+                const gradient = this.ctx.createRadialGradient(
+                    p.x, p.y, 0,
+                    p.x, p.y, p.size * 3
+                );
+                gradient.addColorStop(0, `hsla(${p.hue}, 100%, 70%, ${alpha})`);
+                gradient.addColorStop(1, `hsla(${p.hue}, 100%, 30%, 0)`);
+                
+                this.ctx.fillStyle = gradient;
+                this.ctx.beginPath();
+                this.ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
             
-            // Core
-            this.ctx.fillStyle = `hsla(${p.hue}, 100%, 90%, ${alpha})`;
+            // Core - always draw
+            this.ctx.fillStyle = `hsla(${p.hue}, 100%, ${drawFullGlow ? 90 : 70}%, ${alpha})`;
             this.ctx.beginPath();
             this.ctx.arc(p.x, p.y, p.size * 0.5, 0, Math.PI * 2);
             this.ctx.fill();
             
-            // Conscious particles get special indicator
-            if (p.conscious && this.consciousnessEnabled) {
+            // Conscious particles get special indicator (only if not too many particles)
+            if (p.conscious && this.consciousnessEnabled && this.particles.length < 600) {
                 this.ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.8})`;
                 this.ctx.lineWidth = 1;
                 this.ctx.beginPath();
@@ -734,14 +774,27 @@ class SynesthesiaEngine {
 
     updateHUD() {
         // Update stats
-        document.getElementById('particle-count').textContent = this.particles.length;
+        const particleCount = this.particles.length;
+        document.getElementById('particle-count').textContent = particleCount;
         document.getElementById('dimension-count').textContent = this.currentDimension + 1;
         document.getElementById('gravity-level').textContent = this.gravityStrength.toFixed(1) + 'x';
         document.getElementById('time-dilation').textContent = this.timeDilation.toFixed(1) + 'x';
         
-        // Update bars
-        document.getElementById('reality-bar').style.width = Math.max(0, this.reality) + '%';
-        document.getElementById('energy-bar').style.width = Math.max(0, this.energy) + '%';
+        // Update bars with performance warning
+        const realityBar = document.getElementById('reality-bar');
+        const energyBar = document.getElementById('energy-bar');
+        
+        realityBar.style.width = Math.max(0, this.reality) + '%';
+        energyBar.style.width = Math.max(0, this.energy) + '%';
+        
+        // Visual warning if too many particles
+        if (particleCount > 600) {
+            realityBar.style.background = '#ff6600';
+            energyBar.style.background = '#ff6600';
+        } else {
+            realityBar.style.background = '';
+            energyBar.style.background = '';
+        }
         
         // Update synesthesia
         document.getElementById('synth-sound').textContent = Math.round(this.lastFrequency) + 'Hz';
