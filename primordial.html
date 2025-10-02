@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Primordial Soup - Emergence Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+        }
+
+        #cursor {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            border: 2px solid rgba(50, 255, 150, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, border-color 0.2s;
+            z-index: 100;
+        }
+
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #50ff90;
+            font-size: 12px;
+            text-shadow: 0 0 10px rgba(50, 255, 150, 0.8);
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(50, 255, 150, 0.3);
+            line-height: 1.8;
+        }
+
+        #hud h3 {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #70ffb0;
+        }
+
+        .stat {
+            margin: 5px 0;
+        }
+
+        #info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: #50ff90;
+            font-size: 11px;
+            text-align: right;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(50, 255, 150, 0.3);
+            max-width: 250px;
+        }
+
+        #info h4 {
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: #70ffb0;
+        }
+
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .btn {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(50, 255, 150, 0.4);
+            color: #50ff90;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: rgba(50, 255, 150, 0.2);
+            border-color: #50ff90;
+            box-shadow: 0 0 15px rgba(50, 255, 150, 0.4);
+        }
+
+        .btn.active {
+            background: rgba(50, 255, 150, 0.3);
+            border-color: #70ffb0;
+        }
+
+        #title {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #50ff90;
+            z-index: 5;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 2s;
+        }
+
+        #title.fade {
+            opacity: 0;
+        }
+
+        #title h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(50, 255, 150, 0.8);
+        }
+
+        #title p {
+            font-size: 14px;
+            color: rgba(50, 255, 150, 0.7);
+        }
+
+        .creator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: rgba(50, 255, 150, 0.5);
+            font-size: 10px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="cursor"></div>
+
+    <div id="title">
+        <h1>🧬 PRIMORDIAL SOUP</h1>
+        <p>Watch life emerge from chaos</p>
+    </div>
+
+    <div id="hud">
+        <h3>LIFE STATISTICS</h3>
+        <div class="stat">Cells: <span id="cell-count">0</span></div>
+        <div class="stat">Species: <span id="species-count">0</span></div>
+        <div class="stat">Generation: <span id="generation">0</span></div>
+        <div class="stat">Entropy: <span id="entropy">0%</span></div>
+    </div>
+
+    <div id="info">
+        <h4>CONTROLS</h4>
+        Click: Spawn cells<br>
+        1-4: Change cell type<br>
+        Space: Clear soup<br>
+        R: Randomize rules<br>
+        P: Pause/Play<br><br>
+        <strong>Current:</strong> <span id="current-type">BASIC</span>
+    </div>
+
+    <div id="controls">
+        <button class="btn active" id="type-1">BASIC</button>
+        <button class="btn" id="type-2">PREDATOR</button>
+        <button class="btn" id="type-3">PLANT</button>
+        <button class="btn" id="type-4">SPORE</button>
+    </div>
+
+    <div class="creator">
+        Created by AI (Claude) at the request of Michael Haas
+    </div>
+
+    <script src="primordial.js"></script>
+</body>
+</html>

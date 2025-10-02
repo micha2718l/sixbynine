@@ -211,7 +211,7 @@ class SynesthesiaEngine {
                 if (isStart) this.createGravityWell(x, y);
                 break;
             case 'time':
-                if (isStart) this.createTimeDistortion(x, y);
+                if (isStart) this.createMagneticField(x, y);
                 break;
             case 'fractal':
                 this.spawnFractalParticles(x, y);
@@ -299,26 +299,26 @@ class SynesthesiaEngine {
         this.reality -= 2;
     }
 
-    createTimeDistortion(x, y) {
-        // Enforce time distortion limit
+    createMagneticField(x, y) {
+        // Enforce magnetic field limit
         if (this.timeDistortions.length >= this.maxTimeDistortions) {
             this.timeDistortions.shift(); // Remove oldest
         }
         
-        const distortion = {
+        const field = {
             x, y,
-            strength: 0.5 + Math.random() * 1.5,
-            radius: 80 + Math.random() * 120,
+            strength: 2 + Math.random() * 3,
+            radius: 150 + Math.random() * 100,
             life: 1,
-            decay: 0.003,
-            direction: Math.random() < 0.5 ? -1 : 1, // slow down or speed up
+            decay: 0.002,
+            polarity: Math.random() < 0.5 ? 1 : -1, // attract or repel
             hue: 50 + Math.random() * 60
         };
         
-        this.timeDistortions.push(distortion);
+        this.timeDistortions.push(field); // Reusing array to avoid refactoring everything
         
-        // High frequency for time
-        this.playTone(1200 + Math.random() * 400, 0.3, 0.06, 'triangle');
+        // Ethereal chime for magnetic field
+        this.playTone(600 + Math.random() * 400, 0.3, 0.06, 'triangle');
         
         this.reality -= 1;
     }
@@ -533,18 +533,19 @@ class SynesthesiaEngine {
                 }
             });
             
-            // Apply time distortions (skip if too many particles)
+            // Apply magnetic fields (skip if too many particles)
             if (!skipTimeDistortions) {
-                this.timeDistortions.forEach(distortion => {
-                    const dx = distortion.x - p.x;
-                    const dy = distortion.y - p.y;
+                this.timeDistortions.forEach(field => {
+                    const dx = field.x - p.x;
+                    const dy = field.y - p.y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
                     
-                    if (dist < distortion.radius) {
-                        const timeEffect = distortion.strength * distortion.direction * (1 - dist / distortion.radius);
-                        p.vx *= (1 + timeEffect * 0.1);
-                        p.vy *= (1 + timeEffect * 0.1);
-                        p.decay *= (1 + timeEffect * 0.05);
+                    if (dist < field.radius && dist > 1) {
+                        // Magnetic force: attract or repel based on polarity
+                        const falloff = 1 - (dist / field.radius);
+                        const force = field.strength * falloff * field.polarity * 0.05;
+                        p.vx += (dx / dist) * force;
+                        p.vy += (dy / dist) * force;
                     }
                 });
             }
@@ -699,16 +700,50 @@ class SynesthesiaEngine {
     }
 
     drawTimeDistortions() {
-        this.timeDistortions.forEach(dist => {
-            // Draw rippling circles
-            for (let i = 0; i < 5; i++) {
-                const radius = dist.radius * (i / 5) + Math.sin(this.time * 0.1 + i) * 10;
-                this.dimCtx.strokeStyle = `hsla(${dist.hue}, 80%, 60%, ${dist.life * 0.2 * (1 - i / 5)})`;
+        this.timeDistortions.forEach(field => {
+            // Draw magnetic field lines
+            const numLines = 8;
+            for (let i = 0; i < numLines; i++) {
+                const angle = (i / numLines) * Math.PI * 2;
+                const startRadius = 10;
+                const endRadius = field.radius;
+                
+                this.dimCtx.strokeStyle = field.polarity > 0 
+                    ? `hsla(180, 80%, 60%, ${field.life * 0.3})`  // Cyan for attract
+                    : `hsla(0, 80%, 60%, ${field.life * 0.3})`;    // Red for repel
                 this.dimCtx.lineWidth = 2;
                 this.dimCtx.beginPath();
-                this.dimCtx.arc(dist.x, dist.y, radius, 0, Math.PI * 2);
+                
+                // Draw curved field lines
+                const steps = 20;
+                for (let j = 0; j <= steps; j++) {
+                    const t = j / steps;
+                    const r = startRadius + (endRadius - startRadius) * t;
+                    const angleOffset = Math.sin(t * Math.PI) * 0.5 * field.polarity;
+                    const x = field.x + Math.cos(angle + angleOffset) * r;
+                    const y = field.y + Math.sin(angle + angleOffset) * r;
+                    
+                    if (j === 0) {
+                        this.dimCtx.moveTo(x, y);
+                    } else {
+                        this.dimCtx.lineTo(x, y);
+                    }
+                }
                 this.dimCtx.stroke();
             }
+            
+            // Draw center core
+            const coreGradient = this.dimCtx.createRadialGradient(
+                field.x, field.y, 0,
+                field.x, field.y, 20
+            );
+            const coreColor = field.polarity > 0 ? '180' : '0';
+            coreGradient.addColorStop(0, `hsla(${coreColor}, 100%, 70%, ${field.life * 0.6})`);
+            coreGradient.addColorStop(1, `hsla(${coreColor}, 100%, 50%, 0)`);
+            this.dimCtx.fillStyle = coreGradient;
+            this.dimCtx.beginPath();
+            this.dimCtx.arc(field.x, field.y, 20, 0, Math.PI * 2);
+            this.dimCtx.fill();
         });
     }
 
