@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Art Gallery - Three Masterpieces</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0f051a 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+            50% { text-shadow: 0 0 40px rgba(0, 255, 255, 1), 0 0 60px rgba(255, 0, 255, 0.5); }
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(20, 10, 40, 0.6);
+            border: 2px solid rgba(100, 50, 255, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(100, 50, 255, 0.8);
+            box-shadow: 0 20px 60px rgba(100, 50, 255, 0.4);
+        }
+
+        .card-preview {
+            height: 250px;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(135deg, #1a0a2e, #0f051a);
+        }
+
+        .card-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80px;
+            opacity: 0.3;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(-10px); }
+        }
+
+        .card:nth-child(1) .card-preview { background: linear-gradient(135deg, #1a0033, #0a0015); }
+        .card:nth-child(2) .card-preview { background: linear-gradient(135deg, #0a0015, #1a0033); }
+        .card:nth-child(3) .card-preview { background: linear-gradient(135deg, #0f001a, #1a0a2e); }
+
+        .card-content {
+            padding: 30px;
+        }
+
+        .card-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .card-description {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 20px;
+        }
+
+        .card-features {
+            list-style: none;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 20px;
+        }
+
+        .card-features li {
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .card-features li::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            color: #00ffff;
+        }
+
+        .launch-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.3), rgba(255, 0, 255, 0.3));
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            border-radius: 8px;
+            color: white;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+        }
+
+        .launch-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.5), rgba(255, 0, 255, 0.5));
+            border-color: rgba(0, 255, 255, 1);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.6);
+            transform: scale(1.05);
+        }
+
+        .stats {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            margin: 40px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .stat-item {
+            padding: 20px;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            color: #00ffff;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+
+        .footer a {
+            color: #00ffff;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 32px; }
+            .gallery { grid-template-columns: 1fr; padding: 20px; }
+            .card-preview { height: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌌 INTERACTIVE ART GALLERY 🌌</h1>
+        <div class="subtitle">Three Revolutionary Experiences</div>
+        <div class="tagline">Where Code Becomes Consciousness</div>
+    </div>
+
+    <div class="gallery">
+        <div class="card" onclick="window.location.href='index.html'">
+            <div class="card-preview">
+                <div class="card-icon">🌌</div>
+            </div>
+            <div class="card-content">
+                <h2 class="card-title">Quantum Poetry Visualizer</h2>
+                <p class="card-description">
+                    Watch chaos theory come alive as 300+ particles dance to Lorenz attractor dynamics, 
+                    while unique poems emerge from quantum randomness.
+                </p>
+                <ul class="card-features">
+                    <li>Real Lorenz attractor physics</li>
+                    <li>Generative poetry engine</li>
+                    <li>8 interaction modes</li>
+                    <li>Cosmic explosions & vortexes</li>
+                    <li>Ambient audio synthesis</li>
+                </ul>
+                <a href="index.html" class="launch-btn">ENTER QUANTUM REALM</a>
+            </div>
+        </div>
+
+        <div class="card" onclick="window.location.href='dreamscape.html'">
+            <div class="card-preview">
+                <div class="card-icon">🧬</div>
+            </div>
+            <div class="card-content">
+                <h2 class="card-title">Neural Dreamscape Composer</h2>
+                <p class="card-description">
+                    Draw music with your mouse and watch living creatures spawn, evolve, and reproduce 
+                    based on musical harmony in this evolutionary ecosystem.
+                </p>
+                <ul class="card-features">
+                    <li>Music creates living creatures</li>
+                    <li>Genetic algorithms & reproduction</li>
+                    <li>5 musical scales</li>
+                    <li>God Mode for divine intervention</li>
+                    <li>Record & playback system</li>
+                </ul>
+                <a href="dreamscape.html" class="launch-btn">CREATE LIFE</a>
+            </div>
+        </div>
+
+        <div class="card" onclick="window.location.href='synesthesia.html'">
+            <div class="card-preview">
+                <div class="card-icon">⚡</div>
+            </div>
+            <div class="card-content">
+                <h2 class="card-title">Synesthesia Engine</h2>
+                <p class="card-description">
+                    Paint reality itself across 5 dimensions with cross-sensory fusion where colors make 
+                    sounds, sounds create shapes, and consciousness particles think.
+                </p>
+                <ul class="card-features">
+                    <li>5-dimensional canvas system</li>
+                    <li>Gravity wells & time distortions</li>
+                    <li>Fractal recursion generator</li>
+                    <li>Conscious AI particles</li>
+                    <li>Memory echo system</li>
+                </ul>
+                <a href="synesthesia.html" class="launch-btn">BEND REALITY</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats">
+        <h2 style="margin-bottom: 40px; color: #00ffff;">Gallery Statistics</h2>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Masterpieces</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">25+</div>
+                <div class="stat-label">Unique Features</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">∞</div>
+                <div class="stat-label">Possibilities</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Dependencies</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">60</div>
+                <div class="stat-label">FPS Performance</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Created with pure JavaScript, Web Audio API, and endless creativity</p>
+        <p>September 2025 • <a href="https://github.com" target="_blank">View on GitHub</a></p>
+        <p style="margin-top: 20px; font-style: italic;">"Where art, science, and technology become one"</p>
+    </div>
+
+    <script>
+        // Add particle background effect
+        const canvas = document.createElement('canvas');
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.zIndex = '-1';
+        canvas.style.opacity = '0.3';
+        document.body.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particles = [];
+        for (let i = 0; i < 50; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                size: Math.random() * 2 + 1
+            });
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(10, 10, 26, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
